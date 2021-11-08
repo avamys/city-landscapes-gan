@@ -6,7 +6,8 @@ from tqdm import tqdm
 from utils import save_samples
 
 
-def train_discriminator(model, generator, real_images, opt_d, latent_size):
+def train_discriminator(model, generator, real_images, opt_d, latent_size, 
+                        batch_size, device):
     # Clear discriminator gradients
     opt_d.zero_grad()
 
@@ -32,7 +33,8 @@ def train_discriminator(model, generator, real_images, opt_d, latent_size):
     opt_d.step()
     return loss.item(), real_score, fake_score
 
-def train_generator(model, opt_g, discriminator, latent_size):
+def train_generator(model, opt_g, discriminator, latent_size, batch_size, 
+                    device):
     # Clear generator gradients
     opt_g.zero_grad()
     
@@ -51,7 +53,8 @@ def train_generator(model, opt_g, discriminator, latent_size):
     
     return loss.item()
 
-def fit(discriminator, generator, epochs, lr, train, stats, start_idx=1):
+def fit(discriminator, generator, epochs, lr, train, stats, latent_size, 
+        batch_size, device, start_idx=1):
     sample_dir = 'generated'
     os.makedirs(sample_dir, exist_ok=True)
     fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
@@ -72,10 +75,12 @@ def fit(discriminator, generator, epochs, lr, train, stats, start_idx=1):
         for real_images in tqdm(train):
             # Train discriminator
             loss_d, real_score, fake_score = train_discriminator(
-                discriminator, generator, real_images, opt_d, latent_size)
+                discriminator, generator, real_images, opt_d, latent_size, 
+                batch_size, device)
             # Train generator
             loss_g = train_generator(
-                generator, opt_g, discriminator, latent_size)
+                generator, opt_g, discriminator, latent_size, batch_size, 
+                device)
             
         # Record losses & scores
         losses_g.append(loss_g)
@@ -84,13 +89,16 @@ def fit(discriminator, generator, epochs, lr, train, stats, start_idx=1):
         fake_scores.append(fake_score)
         
         # Log losses & scores (last batch)
-        print("Epoch [{}/{}], loss_g: {:.4f}, loss_d: {:.4f}, real_score: {:.4f}, fake_score: {:.4f}".format(
-            epoch+1, epochs, loss_g, loss_d, real_score, fake_score))
+        print(
+            "Epoch [{}/{}], loss_g: {:.4f}, loss_d: {:.4f}, "
+            "real_score: {:.4f}, fake_score: {:.4f}".format(
+                epoch+1, epochs, loss_g, loss_d, real_score, fake_score))
 
         torch.save(generator.state_dict(), 'model_backups/G.pth')
         torch.save(discriminator.state_dict(), 'model_backups/D.pth')
     
         # Save generated images
-        save_samples(sample_dir, epoch+start_idx, fixed_latent, stats, show=False)
+        save_samples(sample_dir, epoch+start_idx, fixed_latent, stats, 
+                     show=False)
     
     return losses_g, losses_d, real_scores, fake_scores

@@ -1,9 +1,11 @@
+import torch
 import pandas as pd
 import torchvision.transforms as T
 
 from model import Discriminator, Generator
 from get_loader import DeviceDataLoader, get_loader
 from utils import get_default_device, to_device
+from training import fit
 
 
 if __name__ == "__main__":
