@@ -17,7 +17,7 @@ def to_device(data, device):
     return data.to(device, non_blocking=True)
 
 def denorm(img_tensors, stats):
-    return img_tensors * img_tensors * stats[1][0] + stats[0][0]
+    return img_tensors * stats[1][0] + stats[0][0]
 
 def save_samples(generator, sample_dir, index, latent_tensors, stats, show=True):
     fake_images = generator(latent_tensors)
@@ -25,6 +25,6 @@ def save_samples(generator, sample_dir, index, latent_tensors, stats, show=True)
     save_image(denorm(fake_images, stats), os.path.join(sample_dir, fake_fname), nrow=2)
     print('Saving', fake_fname)
     if show:
-        fig, ax = plt.subplots(figsize=(4, 4))
+        fig, ax = plt.subplots(figsize=(4, 4), dpi=120)
         ax.set_xticks([]); ax.set_yticks([])
         ax.imshow(make_grid(fake_images.cpu().detach(), nrow=2).permute(1, 2, 0))

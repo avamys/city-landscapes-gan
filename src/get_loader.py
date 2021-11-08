@@ -1,6 +1,5 @@
 import torch
 import tarfile
-import random
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import ImageFolder
@@ -43,7 +42,6 @@ def get_loader(
     transform,
     batch_size=128,
     num_workers=8,
-    img_size=64,
     shuffle=True,
     pin_memory=True,
 ):

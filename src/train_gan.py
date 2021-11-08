@@ -15,7 +15,6 @@ if __name__ == "__main__":
     num_workers = 2
     stats = (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)
     latent_size = 128
-    embedding_size = 256
     device = get_default_device()
     transform = T.Compose([
         T.Resize(image_size),
