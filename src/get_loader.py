@@ -1,3 +1,4 @@
+import os
 import torch
 import tarfile
 from PIL import Image
@@ -36,6 +37,23 @@ class TarfileDataset(Dataset):
             
         return img
 
+class ImageDataset(Dataset):
+    def __init__(self, path, transform=None):
+        self.path = path
+        self.images = os.listdir(path)
+        self.transform = transform
+        
+    def __len__(self):
+        return len(self.images)
+    
+    def __getitem__(self, index):
+        img = Image.open(f'{self.path}/{self.images[index]}')
+
+        if self.transform is not None:
+            img = self.transform(img)
+            
+        return img
+
 
 def get_loader(
     root_folder,
@@ -46,7 +64,7 @@ def get_loader(
     pin_memory=True,
 ):
 
-    dataset = ImageFolder(root=root_folder, transform=transform)
+    dataset = ImageDataset(root=root_folder, transform=transform)
 
     loader = DataLoader(
         dataset=dataset,
