@@ -1,5 +1,8 @@
 import torch
-from torch.utils.data import DataLoader
+import tarfile
+import random
+from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import ImageFolder
 from utils import to_device
 
@@ -15,6 +18,24 @@ class DeviceDataLoader():
 
     def __len__(self):
         return len(self.loader)
+
+class TarfileDataset(Dataset):
+    def __init__(self, tar_path, transform=None):
+        self.tar = tarfile.open(tar_path)
+        self.tarlist = self.tar.getmembers()
+        self.transform = transform
+        
+    def __len__(self):
+        return len(self.tarlist)
+    
+    def __getitem__(self, index):
+        f = self.tar.extractfile(self.tarlist[index])
+        img = Image.open(f)
+        
+        if self.transform is not None:
+            img = self.transform(img)
+            
+        return img
 
 
 def get_loader(
