@@ -1,3 +1,4 @@
+import click
 import pandas as pd
 import torch
 import torchvision.transforms as T
@@ -7,10 +8,12 @@ from model import Discriminator, Generator
 from training import fit
 from utils import get_default_device, to_device
 
-if __name__ == "__main__":
+@click.command()
+@click.argument('image_folder', type=str)
+def main(image_folder):
     lr = 0.0002
     epochs = 100
-    image_folder = "train"
+    image_folder = image_folder
     image_size = 128
     batch_size = 256
     num_workers = 2
@@ -50,8 +53,13 @@ if __name__ == "__main__":
     discriminator = to_device(discriminator, device)
     generator = to_device(generator, device)
 
-    history = fit(discriminator, generator, epochs, lr, train, stats)
-    history = pd.DataFrame(
+    history = fit(discriminator, generator, epochs, lr, train, stats, 
+                  latent_size, batch_size, device)
+    history_log = pd.DataFrame(
         data=history, columns=["losses_g", "losses_d", "real_scores", "fake_scores"]
     )
-    history.to_csv("history.csv", index=False)
+    history_log.to_csv("history.csv", index=False)
+
+
+if __name__ == "__main__":
+    main()
