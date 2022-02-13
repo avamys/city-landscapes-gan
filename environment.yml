@@ -1,0 +1,9 @@
+name: dcgan
+
+dependencies:
+  - python=3.8
+  - pytorch
+  - pandas
+  - tqdm
+  - torchvision
+  - pyyaml
