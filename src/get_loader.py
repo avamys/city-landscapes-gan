@@ -1,8 +1,9 @@
 import os
 import torch
 import tarfile
+import torchvision.transforms as T
 from PIL import Image
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, ConcatDataset
 from torchvision.datasets import ImageFolder
 from utils import to_device
 
@@ -38,16 +39,22 @@ class TarfileDataset(Dataset):
         return img
 
 class ImageDataset(Dataset):
-    def __init__(self, path, transform=None):
+    def __init__(self, path, is_split=False, transform=None):
         self.path = path
         self.images = os.listdir(path)
         self.transform = transform
-        
+
+        if is_split:
+          self.images = []
+          for imdir in os.listdir(path):
+            impaths = [f"{imdir}/{x}" for x in os.listdir(f"{path}/{imdir}")]
+            self.images.extend(impaths)
+
     def __len__(self):
         return len(self.images)
     
     def __getitem__(self, index):
-        img = Image.open(f'{self.path}/{self.images[index]}')
+        img = Image.open(f'{self.path}/{self.images[index]}').convert('RGB')
 
         if self.transform is not None:
             img = self.transform(img)
@@ -58,13 +65,24 @@ class ImageDataset(Dataset):
 def get_loader(
     root_folder,
     transform,
-    batch_size=128,
+    batch_size=256,
     num_workers=8,
+    img_size=128,
     shuffle=True,
     pin_memory=True,
+    is_split=True,
+    augment=None
 ):
 
-    dataset = ImageDataset(root=root_folder, transform=transform)
+    if augment:
+      seq_dataset = [ImageDataset(root_folder, is_split=is_split, transform=transform)]
+      for _ in range(augment):
+        aug_transform = T.Compose([T.RandomResizedCrop(size=img_size, scale=(0.5,1.0)), transform])
+        aug_dataset = ImageDataset(root_folder, is_split=is_split, transform=aug_transform)
+        seq_dataset.append(aug_dataset)
+      dataset = ConcatDataset(seq_dataset)
+    else:
+      dataset = ImageDataset(root_folder, is_split=is_split, transform=transform)
 
     loader = DataLoader(
         dataset=dataset,
