@@ -56,7 +56,9 @@ def train_generator(model, opt_g, discriminator, latent_size, batch_size,
 def fit(discriminator, generator, epochs, lr, train, stats, latent_size, 
         batch_size, device, start_idx=1):
     sample_dir = 'generated'
+    model_dir = 'model_backups'
     os.makedirs(sample_dir, exist_ok=True)
+    os.makedirs(model_dir, exist_ok=True)
     fixed_latent = torch.randn(64, latent_size, 1, 1, device=device)
 
     # Losses & scores
@@ -94,8 +96,8 @@ def fit(discriminator, generator, epochs, lr, train, stats, latent_size,
             "real_score: {:.4f}, fake_score: {:.4f}".format(
                 epoch+1, epochs, loss_g, loss_d, real_score, fake_score))
 
-        torch.save(generator.state_dict(), 'model_backups/G.pth')
-        torch.save(discriminator.state_dict(), 'model_backups/D.pth')
+        torch.save(generator.state_dict(), f'{model_dir}/G.pth')
+        torch.save(discriminator.state_dict(), f'{model_dir}/D.pth')
     
         # Save generated images
         save_samples(sample_dir, epoch+start_idx, fixed_latent, stats, 

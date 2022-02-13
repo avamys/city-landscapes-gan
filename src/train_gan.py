@@ -10,13 +10,15 @@ from training import fit
 
 if __name__ == "__main__":
     lr = 0.0002
-    epochs = 50
+    epochs = 100
     image_folder = "train"
-    image_size = 64
-    batch_size = 64
+    image_size = 128
+    batch_size = 256
     num_workers = 2
     stats = (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)
     latent_size = 128
+    augment = 6
+    load = False
     device = get_default_device()
     transform = T.Compose([
         T.Resize(image_size),
@@ -30,12 +32,17 @@ if __name__ == "__main__":
         transform=transform,
         batch_size=batch_size,
         num_workers=num_workers,
+        augment=augment
     )
 
     train = DeviceDataLoader(train_loader, device)
 
     discriminator = Discriminator()
     generator = Generator(latent_size)
+    
+    if load:
+        generator.load_state_dict(torch.load(f'model_backups/G.pth'))
+        discriminator.load_state_dict(torch.load(f'model_backups/D.pth'))
 
     torch.cuda.empty_cache()
 
