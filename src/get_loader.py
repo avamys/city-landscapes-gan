@@ -72,7 +72,7 @@ def get_loader(
     img_size=128,
     shuffle=True,
     pin_memory=True,
-    is_split=True,
+    is_split=False,
     augment=None,
 ):
 
