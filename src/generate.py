@@ -2,6 +2,7 @@ import os
 
 import click
 import torch
+import yaml
 from torchvision.utils import save_image
 from tqdm import tqdm
 
@@ -10,13 +11,18 @@ from utils import denorm
 
 
 @click.command()
+@click.argument("config_file", type=click.Path())
 @click.argument("image_folder", type=str)
-def main(image_folder):
-    latent_size = 128
-    stats = (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)
-    N = 100
+@click.argument("n", type=int)
+def main(config_file, image_folder, n):
+    with open(config_file) as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
+    latent_size = config["latent_size"]
+    stats = config["stats"]
+    N = n
     generator = Generator(latent_size)
-    generator.load_state_dict(torch.load("model_backups/G.pth"))
+    generator.load_state_dict(torch.load(f"model_backups/{config['generator']}.pth"))
     generator.eval()
 
     latent = torch.randn(N, latent_size, 1, 1)
